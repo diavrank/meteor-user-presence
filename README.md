@@ -13,20 +13,36 @@ meteor npm install meteor-user-presence meteor-node-stubs
 ```ts
 import { UserPresence } from 'meteor-user-presence';
 
-UserPresence.onUserOnline((userId) => {
-  // handle user online
+UserPresence.onCleanup(function onCleanup(sessionIds?: string[]) {
+	if (!sessionIds) {
+		Meteor.users.updateAsync({}, { $set: { 'status.online': false }, $unset: { 'status.idle': true } }, { multi: true });
+	}
 });
 
-UserPresence.onUserIdle((userId) => {
-  // handle user idle
+// When a user comes online we set their status to online and set the lastOnline field to the current time
+UserPresence.onUserOnline(function onUserOnline(userId: string, connection?: Meteor.Connection) {
+	if (connection) {
+		Meteor.users.updateAsync(userId, {
+			$set: {
+				'status.online': true,
+				'status.idle': false,
+				'status.lastLogin.date': Utilities.currentLocalDate(),
+				'status.lastLogin.ipAddress': connection.clientAddress,
+				// @ts-ignore
+				'status.lastLogin.userAgent': connection.httpHeaders['user-agent']
+			}
+		});
+	}
 });
 
-UserPresence.onUserOffline((userId) => {
-  // handle user offline
+// When a user goes idle we'll set their status to indicate this
+UserPresence.onUserIdle(function onUserIdle(userId: string) {
+	Meteor.users.updateAsync(userId, { $set: { 'status.idle': true } });
 });
 
-UserPresence.onCleanup((sessionIds) => {
-  // handle cleanup of stale sessions
+// When a user goes offline we'll unset their status field to indicate offline status
+UserPresence.onUserOffline(function onUserOffline(userId: string) {
+	Meteor.users.updateAsync(userId, { $set: { 'status.online': false }, $unset: { 'status.idle': true } });
 });
 ```
 
