@@ -1,0 +1,24 @@
+{
+  "name": "meteor-user-presence",
+  "version": "1.0.1",
+  "description": "Meteor user presence tracking helpers.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "meteor-node-stubs": "^1.2.24"
+  },
+  "devDependencies": {
+    "@types/meteor": "^2.0.0",
+    "@types/node": "^22.13.11",
+    "mongodb": "^6.0.0",
+    "typescript": "^5.4.5"
+  }
+}
